@@ -97,11 +97,11 @@ func NewBuildCmd() *cobra.Command {
 				}
 				// if its value is default platforms, build image as single sealer image.
 				if ok := platforms.Default().Match(p); ok {
-					return buildSingleSealerImage(engine, buildFlags.Tag, "", buildFlags.Platforms[0])
+					return buildSingleSealerImage(engine, buildFlags.Tag, "", buildFlags.Platforms[0], buildFlags.SkipTLSVerify)
 				}
 			}
 
-			return buildMultiPlatformSealerImage(engine)
+			return buildMultiPlatformSealerImage(engine, buildFlags.SkipTLSVerify)
 		},
 	}
 	buildCmd.Flags().StringVarP(&buildFlags.Kubefile, "file", "f", "Kubefile", "Kubefile filepath")
@@ -118,6 +118,7 @@ func NewBuildCmd() *cobra.Command {
 	buildCmd.Flags().StringSliceVar(&buildFlags.Labels, "label", []string{getSealerLabel()}, "add labels for image. Format like --label key=[value]")
 	buildCmd.Flags().BoolVar(&buildFlags.NoCache, "no-cache", false, "do not use existing cached images for building. Build from the start with a new set of cached layers.")
 	buildCmd.Flags().StringVar(&buildFlags.BuildMode, "build-mode", options.WithAllMode, "whether to download container image during the build process. default is `all`.")
+	buildCmd.Flags().BoolVar(&buildFlags.SkipTLSVerify, "skip-tls-verify", true, "default is requiring HTTPS and verify certificates when accessing the registry.")
 
 	supportedImageType := map[string]struct{}{v12.KubeInstaller: {}, v12.AppInstaller: {}}
 	if _, ok := supportedImageType[buildFlags.ImageType]; !ok {
@@ -132,7 +133,7 @@ func NewBuildCmd() *cobra.Command {
 	return buildCmd
 }
 
-func buildMultiPlatformSealerImage(engine imageengine.Interface) error {
+func buildMultiPlatformSealerImage(engine imageengine.Interface, skipTLSVerify bool) error {
 	var (
 		// use buildFlags.Tag as manifest name for multi arch build
 		manifest = buildFlags.Tag
@@ -146,7 +147,7 @@ func buildMultiPlatformSealerImage(engine imageengine.Interface) error {
 
 	// build multi platform
 	for _, p := range buildFlags.Platforms {
-		err = buildSingleSealerImage(engine, "", manifest, p)
+		err = buildSingleSealerImage(engine, "", manifest, p, skipTLSVerify)
 		if err != nil {
 			// clean manifest
 			_ = engine.DeleteManifests([]string{manifest}, &options.ManifestDeleteOpts{})
@@ -157,9 +158,10 @@ func buildMultiPlatformSealerImage(engine imageengine.Interface) error {
 	return nil
 }
 
-func buildSingleSealerImage(engine imageengine.Interface, imageName string, manifest string, platformStr string) error {
+func buildSingleSealerImage(engine imageengine.Interface, imageName string, manifest string, platformStr string, skipTLSVerify bool) error {
+	// parse Kubefile & try pull image in "from" syntax
 	kubefileParser := parser.NewParser(rootfs.GlobalManager.App().Root(), buildFlags, engine, platformStr)
-	result, err := getKubefileParseResult(buildFlags.ContextDir, buildFlags.Kubefile, kubefileParser)
+	result, err := getKubefileParseResult(buildFlags.ContextDir, buildFlags.Kubefile, kubefileParser, skipTLSVerify)
 	if err != nil {
 		return err
 	}
@@ -483,7 +485,7 @@ func buildImageExtensionOnResult(result *parser.KubefileResult, imageType string
 	return extension
 }
 
-func getKubefileParseResult(contextDir, file string, kubefileParser *parser.KubefileParser) (*parser.KubefileResult, error) {
+func getKubefileParseResult(contextDir, file string, kubefileParser *parser.KubefileParser, skipTLSVerify bool) (*parser.KubefileResult, error) {
 	kubefile, err := getKubefile(contextDir, file)
 	if err != nil {
 		return nil, err
@@ -497,7 +499,7 @@ func getKubefileParseResult(contextDir, file string, kubefileParser *parser.Kube
 		_ = kfr.Close()
 	}()
 
-	kr, err := kubefileParser.ParseKubefile(kfr)
+	kr, err := kubefileParser.ParseKubefile(kfr, skipTLSVerify)
 	if err != nil {
 		return nil, err
 	}

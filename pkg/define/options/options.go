@@ -45,7 +45,8 @@ type BuildOptions struct {
 
 	//BuildMode means whether to download container image during the build process
 	// default value is download all container images.
-	BuildMode string
+	BuildMode     string
+	SkipTLSVerify bool
 }
 
 type FromOptions struct {

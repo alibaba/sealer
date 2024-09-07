@@ -87,17 +87,17 @@ type KubefileParser struct {
 	imageEngine  imageengine.Interface
 }
 
-func (kp *KubefileParser) ParseKubefile(rwc io.Reader) (*KubefileResult, error) {
+func (kp *KubefileParser) ParseKubefile(rwc io.Reader, skipTLSVerify bool) (*KubefileResult, error) {
 	result, err := parse(rwc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse dockerfile: %v", err)
 	}
 
 	mainNode := result.AST
-	return kp.generateResult(mainNode)
+	return kp.generateResult(mainNode, skipTLSVerify)
 }
 
-func (kp *KubefileParser) generateResult(mainNode *Node) (*KubefileResult, error) {
+func (kp *KubefileParser) generateResult(mainNode *Node, skipTLSVerify bool) (*KubefileResult, error) {
 	var (
 		result = &KubefileResult{
 			Applications: map[string]version.VersionedApplication{},
@@ -141,7 +141,7 @@ func (kp *KubefileParser) generateResult(mainNode *Node) (*KubefileResult, error
 		case command.From:
 			// process FROM aims to pull the image, and merge the applications from
 			// the FROM image.
-			if err = kp.processFrom(node, result); err != nil {
+			if err = kp.processFrom(node, result, skipTLSVerify); err != nil {
 				return nil, fmt.Errorf("failed to process from: %v", err)
 			}
 		case command.Launch:
@@ -429,7 +429,7 @@ func (kp *KubefileParser) processLaunch(node *Node, result *KubefileResult) erro
 	return nil
 }
 
-func (kp *KubefileParser) processFrom(node *Node, result *KubefileResult) error {
+func (kp *KubefileParser) processFrom(node *Node, result *KubefileResult, skipTLSVerify bool) error {
 	var (
 		platform  = parse2.DefaultPlatform()
 		flags     = node.Flags
@@ -455,9 +455,10 @@ func (kp *KubefileParser) processFrom(node *Node, result *KubefileResult) error 
 	}
 
 	id, err := kp.imageEngine.Pull(&options.PullOptions{
-		PullPolicy: kp.pullPolicy,
-		Image:      image,
-		Platform:   platform,
+		PullPolicy:    kp.pullPolicy,
+		Image:         image,
+		Platform:      platform,
+		SkipTLSVerify: skipTLSVerify,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to pull image %s: %v", image, err)

@@ -65,7 +65,7 @@ LAUNCH ["%s"]
 	)
 
 	reader := bytes.NewReader([]byte(text))
-	result, err := testParser.ParseKubefile(reader)
+	result, err := testParser.ParseKubefile(reader, true)
 	if err != nil {
 		t.Fatalf("failed to parse kubefile: %s", err)
 	}
@@ -128,7 +128,7 @@ LAUNCH %s
 	)
 
 	reader := bytes.NewReader([]byte(text))
-	result, err := testParser.ParseKubefile(reader)
+	result, err := testParser.ParseKubefile(reader, true)
 	if err != nil {
 		t.Fatalf("failed to parse kubefile: %s", err)
 	}
@@ -187,7 +187,7 @@ CMDS ["%s", "%s"]
 	)
 
 	reader := bytes.NewReader([]byte(text))
-	result, err := testParser.ParseKubefile(reader)
+	result, err := testParser.ParseKubefile(reader, true)
 	if err != nil {
 		t.Fatalf("failed to parse kubefile: %s", err)
 	}
@@ -241,7 +241,7 @@ LAUNCH ["app1"]`, appFilePath)
 	)
 
 	reader := bytes.NewReader([]byte(text))
-	result, err := testParser.ParseKubefile(reader)
+	result, err := testParser.ParseKubefile(reader, true)
 	if err != nil {
 		t.Fatalf("failed to parse kubefile: %s", err)
 	}
