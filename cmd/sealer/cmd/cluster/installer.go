@@ -80,7 +80,7 @@ func (i AppInstaller) Install(imageName string, options AppInstallOptions) error
 	//save and commit
 	i.cf.SetApplication(i.appDriver.GetApplication())
 	confPath := clusterruntime.GetClusterConfPath(i.imageExtension.Labels)
-	if err := i.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: true, ConfPath: confPath}); err != nil {
+	if err := i.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: false, ConfPath: confPath}); err != nil {
 		return err
 	}
 
@@ -350,7 +350,7 @@ func (k KubeInstaller) Install(kubeImageName string, options KubeInstallOptions)
 
 	//save and commit
 	confPath := clusterruntime.GetClusterConfPath(k.imageSpec.ImageExtension.Labels)
-	if err = k.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: true, ConfPath: confPath}); err != nil {
+	if err = k.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: false, ConfPath: confPath}); err != nil {
 		return err
 	}
 
@@ -436,7 +436,7 @@ func (k KubeInstaller) ScaleUp(scaleUpMasterIPList, scaleUpNodeIPList []net.IP, 
 	}
 
 	confPath := clusterruntime.GetClusterConfPath(k.imageSpec.ImageExtension.Labels)
-	if err = k.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: true, ConfPath: confPath}); err != nil {
+	if err = k.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: false, ConfPath: confPath}); err != nil {
 		return err
 	}
 
@@ -519,7 +519,7 @@ func (k KubeInstaller) ScaleDown(deleteMasterIPList, deleteNodeIPList []net.IP, 
 	k.cf.SetCluster(cluster)
 
 	confPath := clusterruntime.GetClusterConfPath(k.imageSpec.ImageExtension.Labels)
-	if err = k.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: true, ConfPath: confPath}); err != nil {
+	if err = k.cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: false, ConfPath: confPath}); err != nil {
 		return err
 	}
 

@@ -71,7 +71,7 @@ func NewHostAliasCmd() *cobra.Command {
 
 			cf.SetCluster(desiredCluster)
 
-			return cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: true})
+			return cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: false})
 		},
 	}
 	cmd.Flags().StringVar(&hostAlias.IP, "ip", "", "host-alias ip")

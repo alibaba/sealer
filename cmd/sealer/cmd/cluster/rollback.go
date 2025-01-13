@@ -206,7 +206,7 @@ func rollbackCluster(cf clusterfile.Interface, imageEngine imageengine.Interface
 	}
 
 	//save and commit
-	if err = cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: true, ConfPath: confPath}); err != nil {
+	if err = cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: false, ConfPath: confPath}); err != nil {
 		return err
 	}
 

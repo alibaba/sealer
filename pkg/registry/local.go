@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -131,9 +130,9 @@ func (c *localConfigurator) InstallOn(masters, nodes []net.IP) error {
 		return err
 	}
 
-	if err := c.configureAccessCredential(hosts); err != nil {
-		return err
-	}
+	// if err := c.configureAccessCredential(hosts); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
@@ -181,7 +180,7 @@ func (c *localConfigurator) configureLvs(registryHosts, clientHosts []net.IP) er
 	}
 
 	//todo should make lvs image name as const value in sealer repo.
-	lvsImageURL := path.Join(net.JoinHostPort(c.Domain, strconv.Itoa(c.Port)), common.LvsCareRepoAndTag)
+	lvsImageURL := common.LvsCareRepoAndTag
 
 	vip := GetRegistryVIP(c.infraDriver)
 
@@ -378,7 +377,7 @@ func (c *localConfigurator) configureDockerDaemonService(endpoint, daemonFile st
 		}
 	}
 
-	daemonConf.RegistryMirrors = append(daemonConf.RegistryMirrors, "https://"+endpoint)
+	daemonConf.RegistryMirrors = append(daemonConf.RegistryMirrors, "http://"+endpoint)
 
 	content, err := json.MarshalIndent(daemonConf, "", "  ")
 
@@ -391,15 +390,15 @@ func (c *localConfigurator) configureDockerDaemonService(endpoint, daemonFile st
 
 func (c *localConfigurator) configureContainerdDaemonService(endpoint, hostTomlFile string) error {
 	var (
-		caFile             = c.Domain + ".crt"
-		registryCaCertPath = filepath.Join(c.containerRuntimeInfo.CertsDir, endpoint, caFile)
-		url                = "https://" + endpoint
+		// caFile             = c.Domain + ".crt"
+		// registryCaCertPath = filepath.Join(c.containerRuntimeInfo.CertsDir, endpoint, caFile)
+		url = "http://" + endpoint
 	)
 
 	cfg := Hosts{
 		Server: url,
 		HostConfigs: map[string]HostFileConfig{
-			url: {CACert: registryCaCertPath},
+			url: {SkipServerVerify: true},
 		},
 	}
 
@@ -424,7 +423,8 @@ type HostFileConfig struct {
 	// Accepted types
 	// - string - Single file with certificate(s)
 	// - []string - Multiple files with certificates
-	CACert interface{} `toml:"ca"`
+	// CACert           interface{} `toml:"ca"`
+	SkipServerVerify bool `toml:"skip_verify"`
 }
 
 type DaemonConfig struct {

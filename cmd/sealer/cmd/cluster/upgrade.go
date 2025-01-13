@@ -36,8 +36,7 @@ import (
 
 var (
 	exampleForUpgradeCmd = `
-  sealer upgrade docker.io/sealerio/kubernetes:v1.22.15-upgrade
-  sealer upgrade -f Clusterfile
+  sealer upgrade -f upgrade.yaml
 `
 	longDescriptionForUpgradeCmd = `upgrade command is used to upgrade a Kubernetes cluster via specified Clusterfile.`
 )
@@ -209,7 +208,7 @@ func upgradeCluster(cf clusterfile.Interface, imageEngine imageengine.Interface,
 	}
 
 	//save and commit
-	if err = cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: true, ConfPath: confPath}); err != nil {
+	if err = cf.SaveAll(clusterfile.SaveOptions{CommitToCluster: false, ConfPath: confPath}); err != nil {
 		return err
 	}
 

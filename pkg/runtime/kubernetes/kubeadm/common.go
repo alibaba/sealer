@@ -41,7 +41,6 @@ networking:
   serviceSubnet: 10.96.0.0/22
 apiServer:
   extraArgs:
-    feature-gates: TTLAfterFinished=true,EphemeralContainers=true
     audit-policy-file: "/etc/kubernetes/audit-policy.yml"
     audit-log-path: "/var/log/kubernetes/audit.log"
     audit-log-format: json
@@ -65,8 +64,7 @@ apiServer:
       pathType: File
 controllerManager:
   extraArgs:
-    feature-gates: TTLAfterFinished=true,EphemeralContainers=true
-    experimental-cluster-signing-duration: 876000h
+    cluster-signing-duration: 876000h
   extraVolumes:
     - hostPath: /etc/localtime
       mountPath: /etc/localtime
@@ -74,8 +72,6 @@ controllerManager:
       readOnly: true
       pathType: File
 scheduler:
-  extraArgs:
-    feature-gates: TTLAfterFinished=true,EphemeralContainers=true
   extraVolumes:
     - hostPath: /etc/localtime
       mountPath: /etc/localtime

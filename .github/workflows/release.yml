@@ -44,7 +44,7 @@ jobs:
           echo "${{steps.drafter.outputs.body}}" >> release_note.md
 
       - name: Save release notes
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: sealer-release-notes
           path: src/github.com/sealerio/sealer/release_note.md
@@ -94,7 +94,7 @@ jobs:
         working-directory: src/github.com/sealerio/sealer
 
       - name: Save build binaries
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: sealer-binaries
           path: src/github.com/sealerio/sealer/_output/assets/*.tar.gz*
@@ -108,7 +108,7 @@ jobs:
 
     steps:
       - name: Download builds and release notes
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: builds
       - name: Create Release
